@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "./UserContext";
 import { db } from "@/lib/firebase";
 import firebase from "firebase/compat/app";
 import { getBatchBadge } from "@/lib/batch-utils";
+import { toast } from "sonner";
 
 export interface Comment {
     text: string;
@@ -41,53 +42,59 @@ export default function PostCard({ post }: PostCardProps) {
         if (!user?.email) return;
 
         const postRef = db.collection("posts").doc(post.id);
-        let newLikes = [...likes];
+        const userEmail = user.email;
 
+        // Optimistic update
         if (isLiked) {
-            newLikes = newLikes.filter((email) => email !== user.email);
+            setLikes(likes.filter(email => email !== userEmail));
         } else {
-            newLikes.push(user.email);
+            setLikes([...likes, userEmail]);
         }
-
-        setLikes(newLikes); // Optimistic update
 
         try {
             await postRef.update({
-                likes: newLikes,
+                likes: isLiked 
+                    ? firebase.firestore.FieldValue.arrayRemove(userEmail)
+                    : firebase.firestore.FieldValue.arrayUnion(userEmail)
             });
         } catch (error) {
             console.error("Error updating like", error);
-            setLikes(likes); // Revert on error
+            // Revert on error
+            setLikes(post.likes || []);
+            toast.error("Failed to update like");
         }
     };
 
-    const loadComments = async () => {
+    useEffect(() => {
+        let unsubscribe: () => void;
+
         if (showComments) {
-            setShowComments(false);
-            return;
-        }
-
-        setLoadingComments(true);
-        setShowComments(true);
-
-        try {
-            const snapshot = await db
+            setLoadingComments(true);
+            unsubscribe = db
                 .collection("posts")
                 .doc(post.id)
                 .collection("comments")
                 .orderBy("createdAt", "asc")
-                .get();
-
-            const loadedComments = snapshot.docs.map(
-                (doc: firebase.firestore.QueryDocumentSnapshot) => doc.data() as Comment
-            );
-            setComments(loadedComments);
-        } catch (error) {
-            console.error("Error loading comments", error);
-        } finally {
-            setLoadingComments(false);
+                .onSnapshot(
+                    (snapshot: firebase.firestore.QuerySnapshot) => {
+                        const loadedComments = snapshot.docs.map(
+                            (doc: firebase.firestore.QueryDocumentSnapshot) => doc.data() as Comment
+                        );
+                        setComments(loadedComments);
+                        setLoadingComments(false);
+                    },
+                    (error: Error) => {
+                        console.error("Error loading comments", error);
+                        toast.error("Failed to load comments");
+                        setLoadingComments(false);
+                    }
+                );
         }
-    };
+
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, [showComments, post.id]);
 
     const handleAddComment = async () => {
         if (!user?.email || !newComment.trim()) return;
@@ -105,11 +112,10 @@ export default function PostCard({ post }: PostCardProps) {
                 .collection("comments")
                 .add(commentData);
 
-            setComments([...comments, commentData]);
             setNewComment("");
         } catch (error) {
             console.error("Error adding comment", error);
-            alert("Failed to add comment.");
+            toast.error("Failed to add comment.");
         }
     };
 
@@ -165,7 +171,7 @@ export default function PostCard({ post }: PostCardProps) {
                     {isLiked ? "❤️" : "🤍"} {likes.length} Likes
                 </button>
                 <button
-                    onClick={loadComments}
+                    onClick={() => setShowComments(!showComments)}
                     className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-700"
                 >
                     💬 Comments

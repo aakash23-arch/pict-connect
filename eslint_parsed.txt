@@ -1,0 +1,117 @@
+﻿
+E:\pict-connect\app\admin\page.tsx
+  57:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\pict-connect\app\admin\page.tsx:57:13
+  55 |
+  56 |         if (profile.role === "admin") {
+> 57 |             setIsAdmin(true);
+     |             ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  58 |             fetchData();
+  59 |         } else {
+  60 |             setLoading(false);  react-hooks/set-state-in-effect
+
+E:\pict-connect\app\announcements\page.tsx
+  113:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\pict-connect\app\announcements\page.tsx:113:7
+  111 |   useEffect(() => {
+  112 |     if (activeTab === "polls") {
+> 113 |       setLoadingPolls(true);
+      |       ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  114 |       const unsubscribe = db.collection("polls").orderBy("createdAt", "desc").onSnapshot((snapshot: firebase.firestore.QuerySnapshot) => {
+  115 |         const fetchedPolls = snapshot.docs.map((doc: firebase.firestore.QueryDocumentSnapshot) => ({
+  116 |           id: doc.id,  react-hooks/set-state-in-effect
+
+E:\pict-connect\app\dashboard\page.tsx
+  18:11  error  Do not use an `<a>` element to navigate to `/clubs/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages    @next/next/no-html-link-for-pages
+  54:11  error  Do not use an `<a>` element to navigate to `/profile/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+
+E:\pict-connect\app\events\page.tsx
+  26:21  warning  'setLoading' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  41:13  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\pict-connect\app\events\page.tsx:41:13
+  39 |     useEffect(() => {
+  40 |         if (profile?.role === "organizer" || profile?.role === "admin") {
+> 41 |             setIsOrganizer(true);
+     |             ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  42 |         }
+  43 |
+  44 |         const unsubscribe = db  react-hooks/set-state-in-effect
+
+E:\pict-connect\components\ActiveMembersNav.tsx
+  14:12  warning  'loading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+E:\pict-connect\components\Navbar.tsx
+  28:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\pict-connect\components\Navbar.tsx:28:7
+  26 |   useEffect(() => {
+  27 |     if (!user?.email) {
+> 28 |       setUnreadCount(0);
+     |       ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  29 |       return;
+  30 |     }
+  31 |                              react-hooks/set-state-in-effect
+  46:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\pict-connect\components\Navbar.tsx:46:5
+  44 |   // Close menu when route changes
+  45 |   useEffect(() => {
+> 46 |     setIsMenuOpen(false);
+     |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  47 |   }, [pathname]);
+  48 |
+  49 |   const navLinks = [  react-hooks/set-state-in-effect
+
+E:\pict-connect\components\PostCard.tsx
+  72:13  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\pict-connect\components\PostCard.tsx:72:13
+  70 |
+  71 |         if (showComments) {
+> 72 |             setLoadingComments(true);
+     |             ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  73 |             unsubscribe = db
+  74 |                 .collection("posts")
+  75 |                 .doc(post.id)  react-hooks/set-state-in-effect
+
+Γ£û 10 problems (8 errors, 2 warnings)
+

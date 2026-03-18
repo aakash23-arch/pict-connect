@@ -19,7 +19,7 @@ export default function ProfilePage() {
         }
     }, [profile]);
 
-    const handleChange = (field: keyof UserProfile, value: any) => {
+    const handleChange = (field: keyof UserProfile, value: string) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 

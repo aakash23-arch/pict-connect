@@ -28,21 +28,22 @@ export default function LoginPage() {
 
       // Successful login, redirect to dashboard
       window.location.href = "/dashboard";
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error("Error signing in with Google:", error);
-      console.error("Error code:", error.code);
-      console.error("Error message:", error.message);
+      const authError = error as firebase.auth.Error;
+      console.error("Error code:", authError.code);
+      console.error("Error message:", authError.message);
 
       let errorMessage = "Failed to sign in with Google. Please try again.";
 
-      if (error.code === "auth/popup-closed-by-user") {
+      if (authError.code === "auth/popup-closed-by-user") {
         errorMessage = "Sign-in cancelled. Please try again.";
-      } else if (error.code === "auth/popup-blocked") {
+      } else if (authError.code === "auth/popup-blocked") {
         errorMessage = "Popup blocked. Please allow popups for this site.";
-      } else if (error.code === "auth/unauthorized-domain") {
+      } else if (authError.code === "auth/unauthorized-domain") {
         errorMessage = "This domain is not authorized. Please contact support.";
-      } else if (error.message) {
-        errorMessage = `Error: ${error.message}`;
+      } else if (authError.message) {
+        errorMessage = `Error: ${authError.message}`;
       }
 
       alert(errorMessage);
@@ -70,22 +71,23 @@ export default function LoginPage() {
 
       window.localStorage.setItem("emailForSignIn", email);
       alert("Login link sent! Please check your PICT email.");
-    } catch (error: any) {
+    } catch (error: Error | unknown) {
       console.error("Error sending login link:", error);
-      console.error("Error code:", error.code);
-      console.error("Error message:", error.message);
+      const authError = error as firebase.auth.Error;
+      console.error("Error code:", authError.code);
+      console.error("Error message:", authError.message);
 
       // Display more specific error messages
       let errorMessage = "Failed to send login link. Please try again.";
 
-      if (error.code === "auth/invalid-email") {
+      if (authError.code === "auth/invalid-email") {
         errorMessage = "Invalid email format. Please use your @ms.pict.edu email.";
-      } else if (error.code === "auth/unauthorized-continue-uri") {
+      } else if (authError.code === "auth/unauthorized-continue-uri") {
         errorMessage = "Configuration error: Unauthorized redirect URL. Please contact support.";
-      } else if (error.code === "auth/invalid-continue-uri") {
+      } else if (authError.code === "auth/invalid-continue-uri") {
         errorMessage = "Configuration error: Invalid redirect URL. Please contact support.";
-      } else if (error.message) {
-        errorMessage = `Error: ${error.message}`;
+      } else if (authError.message) {
+        errorMessage = `Error: ${authError.message}`;
       }
 
       alert(errorMessage);

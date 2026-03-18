@@ -8,13 +8,13 @@ import "firebase/compat/auth";
 import "firebase/compat/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyARkw9clCiguWnBVfEmZHUI8xnkdvjjDkI",
-  authDomain: "pict-connect-a00c6.firebaseapp.com",
-  projectId: "pict-connect-a00c6",
-  storageBucket: "pict-connect-a00c6.firebasestorage.app",
-  messagingSenderId: "663234570592",
-  appId: "1:663234570592:web:58d674e8e326f249a01605",
-  measurementId: "G-BD1SRXSDFK",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 // Ensure we only initialize once in the browser/Node environment

@@ -71,9 +71,10 @@ export default function SeedPage() {
 
             await batch.commit();
             setStatus(`Successfully seeded ${CLUBS.length} clubs!`);
-        } catch (err: any) {
+        } catch (err: Error | unknown) {
             console.error(err);
-            setStatus("Error: " + err.message);
+            const error = err as Error;
+            setStatus("Error: " + error.message);
         } finally {
             setLoading(false);
         }

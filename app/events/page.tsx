@@ -6,6 +6,8 @@ import { db } from "../../lib/firebase";
 import { useUser } from "../../components/UserContext";
 import firebase from "firebase/compat/app";
 import { ACADEMIC_EVENTS } from "../../lib/academic-events";
+import { toast } from "sonner";
+import { Calendar } from "lucide-react";
 
 interface Event {
     id: string;
@@ -19,13 +21,12 @@ interface Event {
 }
 
 export default function EventsPage() {
-    const { user } = useUser();
+    const { user, profile } = useUser();
     const [events, setEvents] = useState<Event[]>(ACADEMIC_EVENTS);
     const [loading, setLoading] = useState(false);
     const [view, setView] = useState<"list" | "calendar">("list");
 
-    // Admin/Organizer State
-    const [isOrganizer, setIsOrganizer] = useState(false); // In real app, check role
+    const [isOrganizer, setIsOrganizer] = useState(false);
     const [showCreate, setShowCreate] = useState(false);
     const [newEvent, setNewEvent] = useState({
         title: "",
@@ -36,8 +37,7 @@ export default function EventsPage() {
     });
 
     useEffect(() => {
-        // Simple check: if email contains 'admin' or 'club', allow create
-        if (user?.email && (user.email.includes("admin") || user.email.includes("club"))) {
+        if (profile?.role === "organizer" || profile?.role === "admin") {
             setIsOrganizer(true);
         }
 
@@ -51,7 +51,6 @@ export default function EventsPage() {
                         ...doc.data(),
                     })) as Event[];
 
-                    // Merge and sort
                     const allEvents = [...ACADEMIC_EVENTS, ...firestoreEvents].sort((a, b) =>
                         a.date.toMillis() - b.date.toMillis()
                     );
@@ -60,12 +59,11 @@ export default function EventsPage() {
                 },
                 (error: firebase.firestore.FirestoreError) => {
                     console.error("Error fetching events:", error);
-                    // Even if firestore fails, we have valid static events
                 }
             );
 
         return () => unsubscribe();
-    }, [user]);
+    }, [user, profile]);
 
     const handleCreateEvent = async () => {
         if (!user?.email || !newEvent.title || !newEvent.date) return;
@@ -80,9 +78,10 @@ export default function EventsPage() {
             });
             setShowCreate(false);
             setNewEvent({ title: "", description: "", date: "", venue: "", registrationLink: "" });
+            toast.success("Event created successfully!");
         } catch (error) {
             console.error("Error creating event", error);
-            alert("Failed to create event.");
+            toast.error("Failed to create event.");
         }
     };
 
@@ -101,8 +100,10 @@ export default function EventsPage() {
 
         try {
             await eventRef.update({ attendees: newAttendees });
+            toast.success(isAttending ? "RSVP cancelled." : "RSVP successful!");
         } catch (error) {
             console.error("Error updating RSVP", error);
+            toast.error("Failed to update RSVP.");
         }
     };
 
@@ -126,7 +127,6 @@ export default function EventsPage() {
                     )}
                 </div>
 
-                {/* Create Event Form */}
                 {showCreate && (
                     <div className="rounded-lg bg-white p-6 shadow ring-1 ring-gray-200">
                         <h2 className="mb-4 text-lg font-semibold text-gray-900">Create New Event</h2>
@@ -134,33 +134,33 @@ export default function EventsPage() {
                             <input
                                 type="text"
                                 placeholder="Event Title"
-                                className="rounded border border-gray-300 p-2 text-sm"
+                                className="rounded border border-gray-300 p-2 text-sm outline-none focus:border-red-500"
                                 value={newEvent.title}
                                 onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
                             />
                             <input
                                 type="datetime-local"
-                                className="rounded border border-gray-300 p-2 text-sm"
+                                className="rounded border border-gray-300 p-2 text-sm outline-none focus:border-red-500"
                                 value={newEvent.date}
                                 onChange={(e) => setNewEvent({ ...newEvent, date: e.target.value })}
                             />
                             <input
                                 type="text"
                                 placeholder="Venue"
-                                className="rounded border border-gray-300 p-2 text-sm"
+                                className="rounded border border-gray-300 p-2 text-sm outline-none focus:border-red-500"
                                 value={newEvent.venue}
                                 onChange={(e) => setNewEvent({ ...newEvent, venue: e.target.value })}
                             />
                             <input
                                 type="url"
                                 placeholder="Registration Link (Optional)"
-                                className="rounded border border-gray-300 p-2 text-sm"
+                                className="rounded border border-gray-300 p-2 text-sm outline-none focus:border-red-500"
                                 value={newEvent.registrationLink}
                                 onChange={(e) => setNewEvent({ ...newEvent, registrationLink: e.target.value })}
                             />
                             <textarea
                                 placeholder="Description"
-                                className="col-span-2 rounded border border-gray-300 p-2 text-sm"
+                                className="col-span-2 rounded border border-gray-300 p-2 text-sm outline-none focus:border-red-500"
                                 rows={3}
                                 value={newEvent.description}
                                 onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
@@ -175,7 +175,6 @@ export default function EventsPage() {
                     </div>
                 )}
 
-                {/* View Toggle */}
                 <div className="flex gap-2">
                     <button
                         onClick={() => setView("list")}
@@ -191,16 +190,16 @@ export default function EventsPage() {
                     </button>
                 </div>
 
-                {/* Events List */}
                 {loading && <p className="text-sm text-gray-500">Loading events...</p>}
 
                 {!loading && events.length === 0 && (
-                    <div className="rounded-lg bg-gray-50 p-8 text-center text-gray-500">
-                        No upcoming events found.
+                    <div className="flex flex-col items-center justify-center rounded-lg bg-gray-50 p-12 text-center text-gray-500">
+                        <Calendar size={48} className="mb-4 text-gray-400" />
+                        <p className="font-medium text-gray-600">No upcoming events.</p>
                     </div>
                 )}
 
-                {view === "list" ? (
+                {view === "list" && events.length > 0 ? (
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {events.map((event) => {
                             const isAttending = user?.email && event.attendees.includes(user.email);
@@ -253,9 +252,9 @@ export default function EventsPage() {
                             );
                         })}
                     </div>
-                ) : (
+                ) : view === "calendar" ? (
                     <CalendarView events={events} />
-                )}
+                ) : null}
             </div>
         </ProtectedPage>
     );

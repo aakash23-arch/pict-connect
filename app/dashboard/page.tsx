@@ -2,6 +2,7 @@
 
 import ProtectedPage from "../../components/ProtectedPage";
 import { useUser } from "../../components/UserContext";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -15,7 +16,7 @@ export default function DashboardPage() {
         </p>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <a
+          <Link
             href="/clubs"
             className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50 hover:shadow-md dark:bg-gray-800 dark:ring-gray-700 dark:hover:bg-gray-750"
           >
@@ -23,8 +24,8 @@ export default function DashboardPage() {
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
               View and join student-led clubs, and see announcements.
             </p>
-          </a>
-          <a
+          </Link>
+          <Link
             href="/academics"
             className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50 hover:shadow-md dark:bg-gray-800 dark:ring-gray-700 dark:hover:bg-gray-750"
           >
@@ -32,8 +33,8 @@ export default function DashboardPage() {
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
               Access notes, previous year papers and other resources.
             </p>
-          </a>
-          <a
+          </Link>
+          <Link
             href="/announcements"
             className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50 hover:shadow-md dark:bg-gray-800 dark:ring-gray-700 dark:hover:bg-gray-750"
           >
@@ -41,8 +42,8 @@ export default function DashboardPage() {
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
               See what&apos;s happening across all clubs.
             </p>
-          </a>
-          <a
+          </Link>
+          <Link
             href="/inbox"
             className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50 hover:shadow-md dark:bg-gray-800 dark:ring-gray-700 dark:hover:bg-gray-750"
           >
@@ -50,8 +51,8 @@ export default function DashboardPage() {
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
               Start a one-to-one chat with other PICT students.
             </p>
-          </a>
-          <a
+          </Link>
+          <Link
             href="/profile"
             className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-200 transition hover:bg-gray-50 hover:shadow-md dark:bg-gray-800 dark:ring-gray-700 dark:hover:bg-gray-750"
           >
@@ -59,7 +60,7 @@ export default function DashboardPage() {
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
               View and edit your personal and academic information.
             </p>
-          </a>
+          </Link>
         </div>
       </div>
     </ProtectedPage>

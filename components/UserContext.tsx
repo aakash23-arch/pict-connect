@@ -2,12 +2,13 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
-import type firebase from "firebase/compat/app";
+import firebase from "firebase/compat/app";
 
 type User = firebase.User | null;
 
 export interface UserProfile {
   displayName?: string;
+  role?: "student" | "cr" | "organizer" | "admin";
   enrollmentNo?: string;
   branch?: string;
   year?: string;
@@ -57,7 +58,26 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser: User) => {
       setUser(firebaseUser);
       if (firebaseUser?.email) {
-        await fetchProfile(firebaseUser.email);
+        try {
+          const docRef = db.collection("users").doc(firebaseUser.email);
+          const doc = await docRef.get();
+          
+          if (!doc.exists) {
+            const newProfile = {
+              email: firebaseUser.email,
+              displayName: firebaseUser.displayName || "",
+              role: "student",
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            await docRef.set(newProfile);
+            setProfile(newProfile as UserProfile);
+          } else {
+            setProfile(doc.data() as UserProfile);
+          }
+        } catch (error) {
+          console.error("Error during auth state change:", error);
+          setProfile(null);
+        }
       } else {
         setProfile(null);
       }

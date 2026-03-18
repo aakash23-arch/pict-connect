@@ -5,6 +5,9 @@ import ProtectedPage from "../../components/ProtectedPage";
 import { db } from "../../lib/firebase";
 import firebase from "firebase/compat/app";
 import { useUser } from "@/components/UserContext";
+import { toast } from "sonner";
+import { Megaphone } from "lucide-react";
+import Link from "next/link";
 
 interface GlobalAnnouncement {
   id: string;
@@ -150,7 +153,7 @@ export default function AnnouncementsPage() {
 
         const poll = doc.data() as Poll;
         if (poll.votedUsers?.includes(user.email!)) {
-          alert("You have already voted!");
+          toast.error("You have already voted!");
           return;
         }
 
@@ -168,7 +171,7 @@ export default function AnnouncementsPage() {
       });
     } catch (e) {
       console.error("Vote failed", e);
-      alert("Failed to register vote.");
+      toast.error("Failed to register vote.");
     }
   };
 
@@ -176,7 +179,7 @@ export default function AnnouncementsPage() {
     if (!user?.email || !pollQuestion.trim()) return;
     const validOptions = pollOptions.filter(o => o.trim() !== "");
     if (validOptions.length < 2) {
-      alert("Please provide at least 2 options.");
+      toast.error("Please provide at least 2 options.");
       return;
     }
 
@@ -191,9 +194,10 @@ export default function AnnouncementsPage() {
       setCreatingPoll(false);
       setPollQuestion("");
       setPollOptions(["", ""]);
+      toast.success("Poll created successfully!");
     } catch (e) {
       console.error("Create poll failed", e);
-      alert("Failed to create poll.");
+      toast.error("Failed to create poll.");
     }
   };
 
@@ -273,7 +277,8 @@ export default function AnnouncementsPage() {
             {loading && <div className="text-sm text-gray-600">Loading announcements...</div>}
 
             {!loading && filteredAnnouncements.length === 0 && (
-              <div className="rounded-md bg-white p-8 text-center text-gray-500 shadow-sm ring-1 ring-gray-200">
+              <div className="flex flex-col items-center justify-center rounded-lg bg-gray-50 p-12 text-center text-gray-500">
+                <Megaphone size={48} className="mb-4 text-gray-400" />
                 <p className="font-medium">No announcements found</p>
                 <p className="text-xs">Try adjusting your search or filters.</p>
               </div>
@@ -281,7 +286,7 @@ export default function AnnouncementsPage() {
 
             <div className="space-y-4">
               {filteredAnnouncements.map((a) => (
-                <a
+                <Link
                   key={`${a.clubId}_${a.id}`}
                   href={`/clubs/${a.clubId}`}
                   className="group block rounded-xl bg-white p-5 shadow-sm ring-1 ring-gray-200 transition hover:shadow-md hover:ring-red-100"
@@ -321,7 +326,7 @@ export default function AnnouncementsPage() {
                     <p className="text-xs font-medium text-gray-500">Posted by {a.createdBy}</p>
                     <span className="text-xs font-medium text-red-600 opacity-0 transition-opacity group-hover:opacity-100">Read more →</span>
                   </div>
-                </a>
+                </Link>
               ))}
             </div>
           </>

@@ -1,0 +1,104 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Only logged-in users with a valid MS PICT email can access
+    function isAuthenticated() {
+      return request.auth != null && request.auth.token.email.matches(".*@ms.pict.edu");
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.role == "admin";
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users collection
+    match /users/{userEmail} {
+      allow read: if isAuthenticated();
+      
+      // Users can only update their own profile
+      allow create, update: if isAuthenticated() && request.auth.token.email == userEmail;
+      
+      // Admins can update any user (e.g. for role changes)
+      allow write: if isAdmin();
+      
+      // User's private chats inbox
+      match /chats/{chatId} {
+        allow read, write: if isAuthenticated() && request.auth.token.email == userEmail;
+      }
+      
+      // User's joined clubs
+      match /clubs/{clubId} {
+        allow read, write: if isAuthenticated() && request.auth.token.email == userEmail;
+      }
+    }
+
+    // Posts collection
+    match /posts/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && (resource.data.authorEmail == request.auth.token.email || isAdmin());
+
+      match /comments/{commentId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+        allow update, delete: if isAuthenticated() && (resource.data.authorEmail == request.auth.token.email || isAdmin());
+      }
+    }
+
+    // Events collection
+    match /events/{eventId} {
+      allow read: if isAuthenticated();
+      // Only special roles can create events
+      allow create: if isAuthenticated() && (get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.role in ['admin', 'organizer', 'cr']);
+      allow update, delete: if isAuthenticated() && (resource.data.organizerEmail == request.auth.token.email || isAdmin());
+
+      match /rsvps/{userId} {
+        allow read: if isAuthenticated();
+        // Users can only rsvp themselves
+        allow write: if isAuthenticated() && request.auth.token.email == userId;
+      }
+    }
+
+    // Chats collection
+    match /chats/{chatId} {
+      // Participants can view/create the root chat document
+      allow read, write: if isAuthenticated() && (request.auth.token.email in resource.data.participants || request.auth.token.email in request.resource.data.participants);
+      
+      // Only participants can read and write messages in the subcollection
+      match /messages/{messageId} {
+        allow read, write: if isAuthenticated() && (
+          request.auth.token.email in get(/databases/$(database)/documents/chats/$(chatId)).data.participants
+        );
+      }
+    }
+
+    // Clubs collection
+    match /clubs/{clubId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+
+      match /members/{memberId} {
+        allow read: if isAuthenticated();
+        allow write: if isAuthenticated() && request.auth.token.email == memberId;
+      }
+
+      match /announcements/{announcementId} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin(); // Replace with club leads later if implemented
+      }
+    }
+
+    // Global Polls
+    match /polls/{pollId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (get(/databases/$(database)/documents/users/$(request.auth.token.email)).data.role in ['admin', 'cr']);
+      allow update: if isAuthenticated(); // For voting
+      allow delete: if isAdmin();
+    }
+  }
+}

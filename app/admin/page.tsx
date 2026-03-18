@@ -5,6 +5,7 @@ import ProtectedPage from "../../components/ProtectedPage";
 import { db } from "../../lib/firebase";
 import { useUser } from "../../components/UserContext";
 import firebase from "firebase/compat/app";
+import { toast } from "sonner";
 
 interface UserData {
     email: string;
@@ -12,15 +13,8 @@ interface UserData {
     createdAt?: firebase.firestore.Timestamp;
 }
 
-interface ReportedItem {
-    id: string;
-    type: "post" | "comment";
-    content: string;
-    reason: string;
-}
-
 export default function AdminPage() {
-    const { user } = useUser();
+    const { user, profile } = useUser();
     const [isAdmin, setIsAdmin] = useState(false);
     const [users, setUsers] = useState<UserData[]>([]);
     const [stats, setStats] = useState({
@@ -29,27 +23,6 @@ export default function AdminPage() {
         totalEvents: 0,
     });
     const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        if (!user?.email) return;
-
-        // Hardcoded admin check for demo, or fetching from a specific 'admins' collection
-        // In a real app, you might check a custom claim or a document in 'admins' collection
-        const checkAdmin = async () => {
-            // For this demo, let's assume the current user is admin if they have a specific email pattern
-            // or just allow for demonstration purposes if the user is authorized in some other way.
-            // Let's check a 'roles' collection or similar.
-            // For now, let's just allow it for testing if the email contains 'admin'
-            if (user.email.includes("admin") || user.email.includes("pict.edu")) { // rigorous check needed in prod
-                setIsAdmin(true);
-                fetchData();
-            } else {
-                setLoading(false);
-            }
-        };
-
-        checkAdmin();
-    }, [user]);
 
     const fetchData = async () => {
         try {
@@ -67,12 +40,35 @@ export default function AdminPage() {
                 email: doc.id,
                 ...doc.data()
             })) as UserData[];
-            setUsers(usersData.slice(0, 10)); // Just show first 10 for now
+            setUsers(usersData.slice(0, 50));
 
             setLoading(false);
         } catch (error) {
             console.error("Error fetching admin data", error);
+            toast.error("Failed to fetch admin data");
             setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!user?.email || !profile) return;
+
+        if (profile.role === "admin") {
+            setIsAdmin(true);
+            fetchData();
+        } else {
+            setLoading(false);
+        }
+    }, [user, profile]);
+
+    const handleRoleChange = async (email: string, newRole: string) => {
+        try {
+            await db.collection("users").doc(email).update({ role: newRole });
+            setUsers(users.map(u => u.email === email ? { ...u, role: newRole } : u));
+            toast.success(`Role updated to ${newRole} for ${email}`);
+        } catch (error) {
+            console.error("Error updating role", error);
+            toast.error("Failed to update role");
         }
     };
 
@@ -94,7 +90,6 @@ export default function AdminPage() {
             <div className="space-y-6">
                 <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
 
-                {/* Stats Cards */}
                 <div className="grid gap-4 sm:grid-cols-3">
                     <div className="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200">
                         <p className="text-sm font-medium text-gray-500">Total Students</p>
@@ -110,10 +105,9 @@ export default function AdminPage() {
                     </div>
                 </div>
 
-                {/* Recent Users Table */}
                 <div className="rounded-lg bg-white shadow-sm ring-1 ring-gray-200">
                     <div className="border-b px-6 py-4">
-                        <h2 className="text-lg font-semibold text-gray-900">Recent Users</h2>
+                        <h2 className="text-lg font-semibold text-gray-900">Recent Users (Roles)</h2>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
@@ -121,7 +115,7 @@ export default function AdminPage() {
                                 <tr>
                                     <th className="px-6 py-3 font-medium">Email</th>
                                     <th className="px-6 py-3 font-medium">Joined</th>
-                                    <th className="px-6 py-3 font-medium">Actions</th>
+                                    <th className="px-6 py-3 font-medium">Role</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
@@ -132,19 +126,22 @@ export default function AdminPage() {
                                             {u.createdAt ? u.createdAt.toDate().toLocaleDateString() : "-"}
                                         </td>
                                         <td className="px-6 py-3">
-                                            <button className="text-red-600 hover:text-red-800 font-medium text-xs">
-                                                Ban User
-                                            </button>
+                                            <select
+                                                value={u.role || "student"}
+                                                onChange={(e) => handleRoleChange(u.email, e.target.value)}
+                                                className="rounded border border-gray-300 px-2 py-1 text-sm outline-none focus:border-red-500"
+                                            >
+                                                <option value="student">Student</option>
+                                                <option value="cr">CR</option>
+                                                <option value="organizer">Organizer</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
-                </div>
-
-                <div className="rounded-md bg-yellow-50 p-4 text-sm text-yellow-800">
-                    <strong>Note:</strong> This is a simplified admin view. In a production environment, you would have more robust role management and moderation queues.
                 </div>
             </div>
         </ProtectedPage>

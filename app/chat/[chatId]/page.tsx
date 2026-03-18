@@ -7,6 +7,7 @@ import { db } from "../../../lib/firebase";
 import { useUser } from "../../../components/UserContext";
 import firebase from "firebase/compat/app";
 import { getBatchBadge } from "@/lib/batch-utils";
+import { toast } from "sonner";
 
 interface Message {
   id: string;
@@ -102,7 +103,7 @@ export default function ChatPage() {
       setText("");
     } catch (error) {
       console.error("Error sending message", error);
-      alert("Could not send message. Please try again.");
+      toast.error("Could not send message. Please try again.");
     } finally {
       setSending(false);
     }
@@ -168,6 +169,12 @@ export default function ChatPage() {
               rows={1}
               value={text}
               onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
               placeholder="Type a message..."
               className="max-h-32 flex-1 resize-none rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
             />

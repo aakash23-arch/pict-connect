@@ -4,10 +4,11 @@ import { useState } from "react";
 import ProtectedPage from "../../components/ProtectedPage";
 import { useUser } from "../../components/UserContext";
 import { CLUBS } from "../../lib/data/clubs";
+import { Users } from "lucide-react";
+import Link from "next/link";
 
 export default function ClubsPage() {
   const { user } = useUser();
-  // We can add search/filter state here later if needed
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredClubs = CLUBS.filter(c =>
@@ -35,7 +36,7 @@ export default function ClubsPage() {
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredClubs.map((club) => (
-            <a
+            <Link
               key={club.id}
               href={`/clubs/${club.id}`}
               className="flex flex-col justify-between rounded-lg bg-white p-4 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 transition-colors"
@@ -45,13 +46,14 @@ export default function ClubsPage() {
                 <p className="mt-1 text-sm text-gray-600 line-clamp-3">{club.description}</p>
               </div>
               <span className="mt-3 text-xs font-medium text-red-600">View club →</span>
-            </a>
+            </Link>
           ))}
         </div>
 
         {filteredClubs.length === 0 && (
-          <div className="text-center text-gray-500 py-8">
-            No clubs found matching your search.
+          <div className="flex flex-col items-center justify-center rounded-lg bg-gray-50 p-12 text-center text-gray-500">
+            <Users size={48} className="mb-4 text-gray-400" />
+            <p className="font-medium text-gray-600">No clubs found matching your search.</p>
           </div>
         )}
 

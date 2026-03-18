@@ -5,6 +5,9 @@ import ProtectedPage from "../../components/ProtectedPage";
 import { db } from "../../lib/firebase";
 import { useUser } from "../../components/UserContext";
 import firebase from "firebase/compat/app";
+import { toast } from "sonner";
+import { MessageSquareOff } from "lucide-react";
+import Link from "next/link";
 
 interface ChatSummary {
   chatId: string;
@@ -46,12 +49,12 @@ export default function InboxPage() {
 
     const email = newChatEmail.trim().toLowerCase();
     if (!email.endsWith("@ms.pict.edu")) {
-      alert("You can only message other @ms.pict.edu addresses.");
+      toast.error("You can only message other @ms.pict.edu addresses.");
       return;
     }
 
     if (email === user.email) {
-      alert("You cannot start a chat with yourself.");
+      toast.error("You cannot start a chat with yourself.");
       return;
     }
 
@@ -101,7 +104,7 @@ export default function InboxPage() {
       window.location.href = `/chat/${chatId}`;
     } catch (error) {
       console.error("Error starting chat", error);
-      alert("Could not start chat. Please try again.");
+      toast.error("Could not start chat. Please try again.");
     } finally {
       setCreating(false);
     }
@@ -144,14 +147,16 @@ export default function InboxPage() {
           {loading && <div className="text-sm text-gray-600">Loading inbox...</div>}
 
           {!loading && inbox.length === 0 && (
-            <div className="rounded-md bg-white p-4 text-sm text-gray-600 shadow">
-              No conversations yet. Start a new chat with a PICT email above.
+            <div className="flex flex-col items-center justify-center rounded-lg bg-gray-50 p-12 text-center text-gray-500">
+              <MessageSquareOff size={48} className="mb-4 text-gray-400" />
+              <p className="font-medium text-gray-600">No conversations yet.</p>
+              <p className="text-sm">Start a new chat with a PICT email above.</p>
             </div>
           )}
 
           <div className="space-y-2">
             {inbox.map((c) => (
-              <a
+              <Link
                 key={c.chatId}
                 href={`/chat/${c.chatId}`}
                 className="block rounded-lg bg-white p-3 text-sm shadow-sm ring-1 ring-gray-200 hover:bg-gray-50"
@@ -171,7 +176,7 @@ export default function InboxPage() {
                     </span>
                   )}
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
         </section>
